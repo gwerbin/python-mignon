@@ -1,5 +1,5 @@
 import json
-from json_rpc import RPCServer, RPCError, RPCErrorCode, NODATA
+from jsonrpc import RPCServer, RPCError, RPCErrorCode, NODATA
 
 
 def add(x, y):
@@ -72,3 +72,24 @@ for req in requests:
     print('==========')
     print(json.dumps(req, indent=2))
     print(json.dumps(server.call(req, handle_unknown_errors=True), indent=2))
+
+
+print('*** Testing plain-text round-trip ***')
+
+# normally you'd get this over a network somehow
+request = '''
+{
+    "jsonrpc": "2.0",
+    "id": "123",
+    "method": "add",
+    "params": {"x": 1.7, "y": 10}
+}
+'''
+
+print(request)
+# the response is JSON-RPC 2.0 compliant and can be send back to the caller verbatim
+response = json.dumps(server.call(json.loads(request)))
+print(response)
+
+
+# TODO: test the whole spec... https://www.jsonrpc.org
