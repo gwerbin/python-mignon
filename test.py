@@ -1,5 +1,5 @@
 import json
-from jsonrpc import RPCServer, RPCError, RPCErrorCode, NODATA
+from mignon import RPCServer, RPCError, RPCErrorCode, NODATA
 
 
 def add(x, y):
