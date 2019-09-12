@@ -1,22 +1,26 @@
 import json
-from json_rpc import RPCServer, RPCError, NODATA
+from json_rpc import RPCServer, RPCError, RPCErrorCode, NODATA
 
 
-def add(params):
+def add(x, y):
+    return x + y
+
+
+def rpc_add(params):
     for k in ('x', 'y'):
         try:
             v = params[k]
         except KeyError:
-            raise RPCError('Missing parameter', k)
+            raise RPCError(RPCErrorCode.INVALID_PARAMS, 'Missing parameter', k)
 
         if not isinstance(v, (int, float)):
-            raise RPCError('Parameters must be numbers', k)
+            raise RPCError(RPCErrorCode.INVALID_PARAMS, 'Parameters must be numbers', k)
 
-    return params['x'] + params['y']
+    return add(**params)
 
 
 server = RPCServer()
-server.register('add', add)
+server.register('add', rpc_add)
 
 requests = [
     # OK request
@@ -42,14 +46,23 @@ requests = [
     # Unknown method
     {
         'jsonrpc': '2.0',
+        'id': '123',
         'method': 'multiply',
         'params': {'x': 1.7, 'y': 10}
     },
     # Invalid data
     {
         'jsonrpc': '2.0',
+        'id': '123',
         'method': 'add',
         'params': {'x': '1.7', 'y': '10'}
+    },
+    # Invalid params, un-handled
+    {
+        'jsonrpc': '2.0',
+        'id': '123',
+        'method': 'add',
+        'params': {'x': 1.7, 'y': 10, 'z': 'hello'}
     },
 ]
 
@@ -58,4 +71,4 @@ print('*** Testing RPC client ***')
 for req in requests:
     print('==========')
     print(json.dumps(req, indent=2))
-    print(json.dumps(server.call(req), indent=2))
+    print(json.dumps(server.call(req, handle_unknown_errors=True), indent=2))

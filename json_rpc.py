@@ -116,11 +116,12 @@ class RPCServer:
         except Exception as exc:
             if not handle_unknown_errors:
                 raise exc
-            response['error'] = {
-                'code': RPCErrorCode.METHOD_ERROR_UNHANLDED,
-                'message': 'Unknown error while executing procedure',
-                'data': str(exc)
-            }
+            error = RPCError(
+                RPCErrorCode.METHOD_ERROR_UNHANLDED,
+                'Unknown error while executing procedure',
+                data=str(exc)
+            )
+            response['error'] = error.serialize()
         else:
             response['result'] = result
 
